@@ -7,24 +7,19 @@ public class SyncCoordinatorService {
     def dynSvc
 
 	@ProxyMethod
-	public def send(syncdata) {
-		require(syncdata, 'reftype', 'reftype')
-		require(syncdata, 'action', 'action')
-		require(syncdata, 'remote', 'remote')
-		require(syncdata.remote, 'orgcode', 'remote.orgcode')
-		def svc = dynSvc.lookup(syncdata.remote.orgcode + ':RemoteSyncService', 'gdx-node-script')
-		return svc.receive(syncdata)
+	public def send(data, remoteConfig) {
+		require(remoteConfig, 'orgcode');
+		require(remoteConfig, 'service');
+		require(remoteConfig, 'module');
+		require(remoteConfig, 'connection');
+		def params = [data: data, remoteConfig: remoteConfig];
+		def svc = dynSvc.lookup(remoteConfig.orgcode + ':' + remoteConfig.service, 'gdx-node-script')
+		return svc.receive(params)
 	}
 
-	@ProxyMethod
-	public def createSyncMeta(syncdata) {
-		def svc = dynSvc.lookup(syncdata.remote.orgcode + ':RemoteSyncService', 'gdx-node-script')
-		return svc.createSyncMeta(syncdata)	
-	}
-
-	void require(data, field, caption){
+	void require(data, field){
 		if (!data[field]) {
-			throw new Exception(caption + ' must be specified')
+			throw new Exception(field + ' must be specified')
 		}
 	}
 
